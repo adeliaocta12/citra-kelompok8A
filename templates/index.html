@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Aplikasi Pengolahan Citra Digital</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        :root {
+            --primary: #007BFF;
+            --danger: #DC3545;
+            --success: #28A745;
+            --purple: #6F42C1;
+            --light: #F8F9FA;
+            --dark: #343A40;
+            --shadow: rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: var(--light);
+            color: var(--dark);
+            padding: 30px 10px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: auto;
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 30px var(--shadow);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary);
+            font-size: 2rem;
+            margin-bottom: 25px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        input[type="file"],
+        select {
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        select {
+            background-color: white;
+        }
+
+        .buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 14px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-danger  { background: var(--danger); color: white; }
+        .btn-purple  { background: var(--purple); color: white; }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .image-container {
+            text-align: center;
+        }
+
+        .image-container img {
+            width: 100%;
+            border-radius: 12px;
+            box-shadow: 0 6px 16px var(--shadow);
+        }
+
+        .image-container h3 {
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .actions {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        a button {
+            min-width: 110px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 15px 10px;
+            font-size: 14px;
+            color: #888;
+            background-color: #f0f0f0;
+            border-top: 1px solid #ddd;
+            margin-top: 30px;
+            border-radius: 0 0 16px 16px;
+        }
+
+        @media (max-width: 480px) {
+            footer {
+                font-size: 12px;
+                padding: 10px;
+            }
+        
+            body {
+                padding: 20px 5px;
+            }
+
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 1.6rem;
+            }
+
+            .buttons button,
+            .actions button {
+                width: 100%;
+                max-width: 240px;
+            }
+
+            .image-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+
+</head>
+<body>
+    <div class="container">
+        <h1>📸 Aplikasi Pengolahan Citra Digital</h1>
+
+        <form action="/" method="POST" enctype="multipart/form-data">
+            <input type="file" name="image">
+            <select name="filter">
+                <option value="grayscale" {% if selected_filter == 'grayscale' %}selected{% endif %}>Grayscale</option>
+                <option value="blur" {% if selected_filter == 'blur' %}selected{% endif %}>Blur</option>
+                <option value="edge" {% if selected_filter == 'edge' %}selected{% endif %}>Edge Detection</option>
+                <option value="threshold" {% if selected_filter == 'threshold' %}selected{% endif %}>Threshold</option>
+                <option value="invert" {% if selected_filter == 'invert' %}selected{% endif %}>Invert</option>
+                <option value="sepia" {% if selected_filter == 'sepia' %}selected{% endif %}>Sepia</option>
+                <option value="emboss" {% if selected_filter == 'emboss' %}selected{% endif %}>Emboss</option>
+                <option value="sharpen" {% if selected_filter == 'sharpen' %}selected{% endif %}>Sharpen</option>
+                <option value="brightness" {% if selected_filter == 'brightness' %}selected{% endif %}>Brightness</option>
+                <option value="contrast" {% if selected_filter == 'contrast' %}selected{% endif %}>Contrast</option>
+                <option value="gaussian_noise" {% if selected_filter == 'gaussian_noise' %}selected{% endif %}>Gaussian Noise</option>
+                <option value="soft_sepia" {% if selected_filter == 'soft_sepia' %}selected{% endif %}>Soft Sepia</option>
+                <option value="negative_alt" {% if selected_filter == 'negative_alt' %}selected{% endif %}>Negative (Alternatif)</option>
+            </select>
+
+            <div class="buttons">
+                <button type="submit" name="submit_upload" class="btn-primary">🔼 Upload & Proses</button>
+                <button type="submit" class="btn-success">🎨 Proses Ulang Filter</button>
+            </div>
+        </form>
+
+        {% if original and result %}
+        <div class="image-grid">
+            <div class="image-container">
+                <h3>🖼️ Gambar Asli</h3>
+                <img src="{{ url_for('static', filename=original) }}" alt="Gambar Asli">
+            </div>
+            <div class="image-container">
+                <h3>🎨 Gambar Hasil</h3>
+                <img src="{{ url_for('static', filename=result) }}" alt="Gambar Hasil">
+                {% if selected_filter in ['brightness', 'contrast'] %}
+                <form method="POST" action="/">
+                    <input type="hidden" name="filter" value="{{ selected_filter }}">
+                    <div style="margin-top: 15px;">
+                        {% if selected_filter == 'brightness' %}
+                        <label for="brightness_val" style="font-weight:bold;">Atur Brightness (0 - 255):</label><br>
+                        <input type="range" id="brightness_val" name="brightness_val" min="0" max="255" value="{{ brightness_val }}" oninput="brightness_output.value = brightness_val.value">
+                        <output name="brightness_output" id="brightness_output">{{ brightness_val }}</output>
+                        {% elif selected_filter == 'contrast' %}
+                        <label for="contrast_val" style="font-weight:bold;">Atur Contrast (0 - 300%):</label><br>
+                        <input type="range" id="contrast_val" name="contrast_val" min="0" max="300" value="{{ contrast_val }}" oninput="contrast_output.value = contrast_val.value + '%'">
+                        <output name="contrast_output" id="contrast_output">{{ contrast_val }}%</output>
+                        {% endif %}
+                    </div>
+                    <div style="margin-top: 12px;">
+                        <button type="submit" class="btn-primary">🔄 Terapkan Filter dengan Nilai Baru</button>
+                    </div>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="actions">
+            <a href="{{ url_for('download') }}"><button class="btn-success">⬇️ Download</button></a>
+            <a href="{{ url_for('delete') }}"><button class="btn-danger">🗑️ Hapus</button></a>
+            <a href="{{ url_for('export_pdf') }}"><button class="btn-purple">📄 Export ke PDF</button></a>
+        </div>
+        {% endif %}
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Aplikasi Pengolahan Citra Digital | Dibuat oleh Tim Adifa</p>
+    </footer>
+</body>
+</html>
